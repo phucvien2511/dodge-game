@@ -1,0 +1,88 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Press Start 2P', cursive;
+}
+
+.container {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: space-evenly;
+    height: 80vh;
+}
+.header {
+    
+    font-size: 40px;
+    font-weight: bold;
+    margin: 30px auto;
+    text-align: center;
+}
+/* .game-pattern {
+
+    width: 900px;
+    height: 540px;
+    margin-left: 50px;
+}
+*/
+.game-pattern {
+    /* 27x15 board */
+    width: 1080px;
+    height: 600px;
+    /* ----------- */
+    margin-left: 50px;
+    
+
+}
+
+.game-pattern div {
+    width: 40px;
+    height: 40px;
+}
+
+/* Divide game pattern into 30x18 board with gray border */
+.board {
+    width: 40px;
+    height: 40px;
+    border: 1px solid gray;
+}
+/* Create character */
+#character {
+    background-image: url('knight.png');
+    background-size: 40px 40px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+.scoreboard {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+#score {
+    font-size: 30px;
+    font-weight: bold;
+    margin: 30px 10px;
+    text-align: center;
+}
+
+.coin-symbol {
+    width: 40px;
+    height: 40px;
+}
+
+.start-btn, .reset-btn {
+    width: 200px;
+    height: 50px;
+    font-size: 20px;
+    font-weight: bold;
+    margin: 30px auto;
+    text-align: center;
+    background-color: #f1c40f;
+    border: 5px solid gray;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+}
