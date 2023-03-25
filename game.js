@@ -118,11 +118,11 @@ function spawnCoin() {
     //Make coin disappear after 5 seconds
     setTimeout(function () {
         document.querySelector('.game-pattern').removeChild(coin);
-    }, 5000);
+    }, 6000);
 }
 function spawnObstacle() {
     //Create 50-250 obstacles
-    numObstacle = Math.floor(Math.random() * 200) + 100;
+    numObstacle = Math.floor(Math.random() * 150) + 50;
     //Spawn obstacles
     for (let i = 0; i < numObstacle; i++) {
         //Spawn an obstacle at random position in the board
@@ -146,7 +146,6 @@ function spawnObstacle() {
     }
     let audio2 = new Audio('audio/caution.mp3');
     audio2.volume = 0.2;
-    audio2.playbackRate = 2;
     audio2.play();
     //Make spike appear
     setTimeout(function () {
@@ -158,7 +157,7 @@ function spawnObstacle() {
             obstacle.textContent = '';
             spikeAppeared = true;
         });
-    }, 500);
+    }, 1000);
     
     //Make spike disappear
     setTimeout(function () {
@@ -166,7 +165,7 @@ function spawnObstacle() {
             obstacle.remove(); 
             spikeAppeared = false;
         });
-    }, 1000);
+    }, 1500);
 }
 
 setInterval(function updateScore() {
