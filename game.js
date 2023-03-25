@@ -108,7 +108,7 @@ function spawnCoin() {
     coin.style.top = offsetY + (coinY * charSize) + 'px';
     coin.style.width = charSize + 'px';
     coin.style.height = charSize + 'px';
-    coin.style.backgroundImage = "url('coin.png')";
+    coin.style.backgroundImage = "url('image/coin.png')";
     coin.style.backgroundRepeat = 'no-repeat';
     coin.style.backgroundPosition = 'center';
     coin.style.backgroundSize = 'cover';
@@ -135,7 +135,7 @@ function spawnObstacle() {
         obstacle.style.top = offsetY + (obstacleY * charSize) + 'px';
         obstacle.style.width = charSize + 'px';
         obstacle.style.height = charSize + 'px';
-        obstacle.style.backgroundImage = "url('caution.png')";
+        obstacle.style.backgroundImage = "url('image/caution.png')";
         obstacle.style.backgroundRepeat = 'no-repeat';
         obstacle.style.backgroundPosition = 'center';
         obstacle.style.backgroundSize = 'cover';
@@ -146,11 +146,12 @@ function spawnObstacle() {
     }
     let audio2 = new Audio('audio/caution.mp3');
     audio2.volume = 0.2;
+    audio2.playbackRate = 2;
     audio2.play();
     //Make spike appear
     setTimeout(function () {
         document.querySelectorAll('.obstacle').forEach(obstacle => {
-            obstacle.style.backgroundImage = "url('spike.png')";
+            obstacle.style.backgroundImage = "url('image/spike.png')";
             obstacle.style.backgroundRepeat = 'no-repeat';
             obstacle.style.backgroundPosition = 'center';
             obstacle.style.backgroundSize = 'cover';
@@ -180,7 +181,7 @@ setInterval(function updateScore() {
                 clearInterval(obstacleInterval);
                 clearInterval(coinInterval);
                 alert('Game Over! Your score is ' + score);
-                char.style.backgroundImage = "url('skull.webp')";
+                char.style.backgroundImage = "url('image/skull.webp')";
                 document.querySelectorAll('.coin').forEach(coin => {
                     coin.remove();
                 });
@@ -200,7 +201,7 @@ setInterval(function updateCoin() {
                 document.getElementById('score').innerHTML = score;
                 coin.remove();
                 let audio = new Audio('audio/correct.mp3');
-                audio.volume = 0.5;
+                audio.volume = 0.3;
                 audio.play();
             }
         }
