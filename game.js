@@ -215,6 +215,7 @@ function resetGame() {
     charY = 0;
     gameOver = false;
     clearInterval(obstacleInterval);
+    clearInterval(coinInterval);
     document.querySelector('.start-btn').disabled = false;
     return;
 }
