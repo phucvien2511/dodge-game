@@ -36,9 +36,14 @@
 
 }
 
-.game-pattern div {
-    width: 40px;
-    height: 40px;
+.desc {
+    width: 100%;
+    height: 100%;
+}
+
+.game-pattern .desc div {
+    margin: 10px 0;
+    line-height: 1.5;
 }
 
 /* Divide game pattern into 30x18 board with gray border */
@@ -53,6 +58,7 @@
     background-size: 40px 40px;
     background-repeat: no-repeat;
     background-position: center;
+    z-index: 3;
 }
 .scoreboard {
     display: flex;
@@ -87,6 +93,11 @@
     justify-content: center;
 }
 
-.desc > * {
+/* .desc > * {
     margin-left: 50px;
+} */
+
+.footer {
+    text-align: center;
+    font-size: 12px;
 }

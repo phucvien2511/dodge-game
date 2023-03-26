@@ -14,11 +14,13 @@ let coinInterval = null;
 let numObstacle = 0;
 let movementListener = null;
 let spikeAppeared = false;
-// let audio = new Audio('audio/medieval.mp3');
-// audio.loop = true;
-// audio.volume = 0.25;
-// audio.play();
+// let b_audio = new Audio('audio/medieval.mp3');
+// b_audio.loop = true;
+// b_audio.volume = 0.4;
+// b_audio.play();
 function initGame() {
+    //Empty the instructions inside game pattern
+    document.querySelector('.game-pattern').innerHTML = '';
     //Create board
     for (let i = 0; i < width - 1; i++) {
         for (let j = 0; j < height - 1; j++) {
@@ -42,6 +44,7 @@ function initGame() {
     charElement.style.top = offsetY + 'px';
     charElement.style.width = charSize + 'px';
     charElement.style.height = charSize + 'px';
+
     document.querySelector('.game-pattern').appendChild(charElement);
     //Start game
     startGame();
@@ -118,11 +121,28 @@ function spawnCoin() {
     //Make coin disappear after 5 seconds
     setTimeout(function () {
         document.querySelector('.game-pattern').removeChild(coin);
-    }, 6000);
+    }, 8000);
 }
 function spawnObstacle() {
     //Create 50-250 obstacles
-    numObstacle = Math.floor(Math.random() * 150) + 50;
+    if (score <= 20) {
+        numObstacle = Math.floor(Math.random() * 40) + 20;
+    }
+    else if (score > 20 && score <= 40) {
+        numObstacle = Math.floor(Math.random() * 70) + 41;
+    }
+    else if (score > 40 && score <= 60) {
+        numObstacle = Math.floor(Math.random() * 100) + 71;
+    }
+    else if (score > 60 && score <= 80) {
+        numObstacle = Math.floor(Math.random() * 130) + 101;
+    }
+    else if (score > 80 && score <= 100){
+        numObstacle = Math.floor(Math.random() * 170) + 131;
+    }
+    else {
+        numObstacle = 200;
+    }
     //Spawn obstacles
     for (let i = 0; i < numObstacle; i++) {
         //Spawn an obstacle at random position in the board
@@ -141,6 +161,7 @@ function spawnObstacle() {
         obstacle.style.backgroundSize = 'cover';
         obstacle.style.textAlign = 'center';
         obstacle.style.lineHeight = charSize + 'px';
+        obstacle.style.zIndex = '4';
         document.querySelector('.game-pattern').appendChild(obstacle);
 
     }
@@ -155,6 +176,7 @@ function spawnObstacle() {
             obstacle.style.backgroundPosition = 'center';
             obstacle.style.backgroundSize = 'cover';
             obstacle.textContent = '';
+            obstacle.style.zIndex = '2';    //Bring character to front
             spikeAppeared = true;
         });
     }, 1000);
@@ -207,7 +229,7 @@ setInterval(function updateCoin() {
     });
 }, 1);
 function resetGame() {
-    document.querySelector('.game-pattern').innerHTML = '';
+    
     score = 0;
     document.getElementById('score').innerHTML = score;
     charX = 0;
@@ -216,5 +238,20 @@ function resetGame() {
     clearInterval(obstacleInterval);
     clearInterval(coinInterval);
     document.querySelector('.start-btn').disabled = false;
+    document.querySelector('.game-pattern').innerHTML = `
+        <div class="desc">
+            <div>Once upon a time, there was an HCMUT student who found himself stuck inside a dream with Deadline devil. In this dream, he becomes a knight who is never gonna give you up...</div>
+            <div class="play-rules">
+                <div>How to play?</div>
+                <div>W: Move up</div>
+                <div>S: Move down</div>
+                <div>A: Move left</div>
+                <div>D: Move right</div>
+            </div>
+            <div>Try to dodge the obstacles and collect as many coins as you can!</div>
+            <div>As you get more coins, the nightmare will become more and more intense! Watch out your step!</div>
+            <div style="color: red;">Before playing, please turn off Telex and use headphones for better experience.</div>
+        </div>
+    `;
     return;
 }
