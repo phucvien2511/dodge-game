@@ -4,7 +4,8 @@ const offsetY = 100;
 const width = document.querySelector('.game-pattern').offsetWidth / charSize;
 const height = document.querySelector('.game-pattern').offsetHeight / charSize;
 const board = document.querySelector('.game-pattern');
-
+const borderImg = 'url("image/wall2.jpg")';
+const mapImg = 'url("image/wall.jpg")';
 let charX = 0;
 let charY = 0;
 let score = 0;
@@ -14,6 +15,7 @@ let coinInterval = null;
 let numObstacle = 0;
 let movementListener = null;
 let spikeAppeared = false;
+
 // let b_audio = new Audio('audio/medieval.mp3');
 // b_audio.loop = true;
 // b_audio.volume = 0.4;
@@ -31,11 +33,117 @@ function initGame() {
             element.style.top = offsetY + (j*charSize) + 'px';
             element.style.width = charSize + 'px';
             element.style.height = charSize + 'px';
-            element.style.backgroundColor = '#eeede7';
+            element.style.backgroundImage = mapImg;
+            element.style.backgroundRepeat = 'no-repeat';
+            element.style.backgroundPosition = 'center';
+            element.style.backgroundSize = 'cover';
+            element.style.textAlign = 'center';
             element.style.border = '1px solid #b9b7bd';
             document.querySelector('.game-pattern').appendChild(element);
         }
     }
+    //Top border
+    for (let i = 0; i < width - 1; i++) {
+        let element = document.createElement('div');
+        element.classList.add('cell');
+        element.style.position = 'absolute';
+        element.style.left = offsetX + (i*charSize) + 'px';
+        element.style.top = offsetY - charSize + 'px';
+        element.style.width = charSize + 'px';
+        element.style.height = charSize + 'px';
+        element.style.backgroundImage = borderImg;
+        element.style.backgroundRepeat = 'no-repeat';
+        element.style.backgroundPosition = 'bottom';
+        element.style.backgroundSize = '40px 20px';
+        element.style.textAlign = 'center';
+        // element.style.border = '1px solid #b9b7bd';
+        document.querySelector('.game-pattern').appendChild(element);
+    }
+    //Bottom border
+    for (let i = 0; i < width - 1; i++) {
+        let element = document.createElement('div');
+        element.classList.add('cell');
+        element.style.position = 'absolute';
+        element.style.left = offsetX + (i*charSize) + 'px';
+        element.style.top = offsetY + (height - 1)*charSize + 'px';
+        element.style.width = charSize + 'px';
+        element.style.height = charSize + 'px';
+        element.style.backgroundImage = borderImg;
+        element.style.backgroundRepeat = 'no-repeat';
+        element.style.backgroundPosition = 'top';
+        element.style.backgroundSize = '40px 20px';
+        element.style.textAlign = 'center';
+        // element.style.border = '1px solid #b9b7bd';
+        document.querySelector('.game-pattern').appendChild(element);
+    }
+    //Left border
+    for (let i = 0; i < height - 1; i++) {
+        let element = document.createElement('div');
+        element.classList.add('cell');
+        element.style.position = 'absolute';
+        element.style.left = offsetX - charSize + 'px';
+        element.style.top = offsetY + (i*charSize) + 'px';
+        element.style.width = charSize + 'px';
+        element.style.height = charSize + 'px';
+        element.style.backgroundImage = borderImg;
+        element.style.backgroundRepeat = 'no-repeat';
+        element.style.backgroundPosition = 'right';
+        element.style.backgroundSize = '20px 40px';
+        element.style.textAlign = 'center';
+        // element.style.border = '1px solid #b9b7bd';
+        document.querySelector('.game-pattern').appendChild(element);
+    }
+    //Right border
+    for (let i = 0; i < height - 1; i++) {
+        let element = document.createElement('div');
+        element.classList.add('cell');
+        element.style.position = 'absolute';
+        element.style.left = offsetX + (width - 1)*charSize + 'px';
+        element.style.top = offsetY + (i*charSize) + 'px';
+        element.style.width = charSize + 'px';
+        element.style.height = charSize + 'px';
+        element.style.backgroundImage = borderImg;
+        element.style.backgroundRepeat = 'no-repeat';
+        element.style.backgroundPosition = 'left';
+        element.style.backgroundSize = '20px 40px';
+        element.style.textAlign = 'center';
+        // element.style.border = '1px solid #b9b7bd';
+        document.querySelector('.game-pattern').appendChild(element);
+    }
+    //Fill the gap at the corners
+    function fillCorner(posX, posY, bgPos) {
+        let element = document.createElement('div');
+        element.classList.add('cell');
+        element.style.position = 'absolute';
+        element.style.left = offsetX + (posX*charSize) + 'px';
+        element.style.top = offsetY + (posY*charSize) + 'px';
+        element.style.width = charSize + 'px';
+        element.style.height = charSize + 'px';
+        element.style.backgroundImage = borderImg;
+        element.style.backgroundRepeat = 'no-repeat';
+        element.style.backgroundPosition = bgPos;
+        element.style.backgroundSize = '20px 20px';
+        element.style.textAlign = 'center';
+        // element.style.border = '1px solid #b9b7bd';
+        document.querySelector('.game-pattern').appendChild(element);
+    }
+    //Top left corner
+    fillCorner(-1, -1, 'bottom right');
+    //Top right corner
+    fillCorner(width-1, -1, 'bottom left');
+    //Bottom left corner
+    fillCorner(-1, height-1, 'top right');
+    //Bottom right corner
+    fillCorner(width-1, height-1, 'top left');
+
+    // Background big version
+    // document.querySelector('.game-pattern').style.backgroundImage = "url('image/bg.png')";
+    // document.querySelector('.game-pattern').style.backgroundSize = '1040px 560px';
+    // document.querySelector('.game-pattern').style.backgroundRepeat = 'no-repeat';
+
+    //Set background position to same with offset
+
+
     //Create character
     let charElement = document.createElement('div');
     charElement.setAttribute('id', 'character');
@@ -240,7 +348,7 @@ function resetGame() {
     document.querySelector('.start-btn').disabled = false;
     document.querySelector('.game-pattern').innerHTML = `
         <div class="desc">
-            <div>Once upon a time, there was an HCMUT student who found himself stuck inside a dream with Deadline devil. In this dream, he becomes a knight who is never gonna give you up...</div>
+            <div>Once upon a time, there was a HCMUT student who found himself stuck inside a dream with Deadline devil. In this dream, he becomes a knight who is never gonna give you up...</div>
             <div class="play-rules">
                 <div>How to play?</div>
                 <div>W: Move up</div>
