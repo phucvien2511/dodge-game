@@ -6,20 +6,19 @@ const height = document.querySelector('.game-pattern').offsetHeight / charSize;
 const board = document.querySelector('.game-pattern');
 const borderImg = 'url("image/wall2.jpg")';
 const mapImg = 'url("image/wall.jpg")';
+
 let charX = 0;
 let charY = 0;
 let score = 0;
+let life = 3;
 let gameOver = false;
 let obstacleInterval = null;
 let coinInterval = null;
+let heartInterval = null;
 let numObstacle = 0;
 let movementListener = null;
 let spikeAppeared = false;
-
-// let b_audio = new Audio('audio/medieval.mp3');
-// b_audio.loop = true;
-// b_audio.volume = 0.4;
-// b_audio.play();
+let lifeDropped = false;
 function initGame() {
     //Empty the instructions inside game pattern
     document.querySelector('.game-pattern').innerHTML = '';
@@ -136,13 +135,17 @@ function initGame() {
     //Bottom right corner
     fillCorner(width-1, height-1, 'top left');
 
-    // Background big version
-    // document.querySelector('.game-pattern').style.backgroundImage = "url('image/bg.png')";
-    // document.querySelector('.game-pattern').style.backgroundSize = '1040px 560px';
-    // document.querySelector('.game-pattern').style.backgroundRepeat = 'no-repeat';
-
-    //Set background position to same with offset
-
+    //Create lifeboard
+    for (let i = 0; i < 3; i++) {
+        let element = document.createElement('div');
+        element.classList.add('life');
+        element.style.width = '30px';
+        element.style.height = '30px';
+        element.style.backgroundImage = "url('image/heart.png')";
+        element.style.backgroundSize = '30px 30px';
+        element.style.backgroundRepeat = 'no-repeat';
+        document.querySelector('.lifeboard').appendChild(element);
+    }
 
     //Create character
     let charElement = document.createElement('div');
@@ -152,7 +155,6 @@ function initGame() {
     charElement.style.top = offsetY + 'px';
     charElement.style.width = charSize + 'px';
     charElement.style.height = charSize + 'px';
-
     document.querySelector('.game-pattern').appendChild(charElement);
     //Start game
     startGame();
@@ -162,56 +164,66 @@ function initGame() {
 }
 
 function startGame() {
+    life = 3;
     controlCharacter();
+    //Spawn new obstacles, coins and hearts every 3 seconds
     obstacleInterval = setInterval(spawnObstacle, 3000);
     coinInterval = setInterval(spawnCoin, 3000);
+    heartInterval = setInterval(spawnHeart, 3000);
+    //Stop the spawn when game over
     if (gameOver) {
         clearInterval(obstacleInterval);
         clearInterval(coinInterval);
+        clearInterval(heartInterval);
         return;
     }
 }
 
 function controlCharacter() {
-    if (!gameOver) {
-        let char = document.getElementById('character');
-        if (movementListener) {
-            document.removeEventListener('keydown', movementListener);
-        }
-        movementListener = function(event) {
-            if (event.keyCode === 87) { // W key
-                charY--;
-                if (charY < 0) {
-                    charY = 0;
-                }
-            } else if (event.keyCode === 83) { // S key
-                charY++;
-                if (charY > height - 2) {
-                    charY = height - 2;
-                }
-            } else if (event.keyCode === 65) { // A key
-                charX--;
-                if (charX < 0) {
-                    charX = 0;
-                }
-            } else if (event.keyCode === 68) { // D key
-                charX++;
-                if (charX > width - 2) {
-                    charX = width - 2;
-                }
-            }
-            const posX = offsetX + (charX * charSize);
-            const posY = offsetY + (charY * charSize);
-            char.style.left = posX + 'px';
-            char.style.top = posY + 'px';
-        };
-        document.addEventListener('keydown', movementListener);
+    //Use WASD to control the character
+    let char = document.getElementById('character');
+    if (movementListener) {
+        document.removeEventListener('keydown', movementListener);
     }
+    movementListener = function(e) {
+        if (e.keyCode === 87) {
+            //W
+            charY--;
+            if (charY < 0) {
+                charY = 0;
+            }
+        }
+        else if (e.keyCode === 65) {
+            //A
+            charX--;
+            if (charX < 0) {
+                charX = 0;
+            }
+        }
+        else if (e.keyCode === 83) {
+            //S
+            charY++;
+            if (charY > height - 2) {
+                charY = height - 2;
+            }
+        }
+        else if (e.keyCode === 68) {
+            //D
+            charX++;
+            if (charX > width - 2) {
+                charX = width - 2;
+            }
+        }
+        char.style.left = offsetX + (charX * charSize) + 'px';
+        char.style.top = offsetY + (charY * charSize) + 'px';
+    };
+    document.addEventListener('keydown', movementListener);
 }
+
 function spawnCoin() {
     //Spawn a coin at random position 
-    let coinX = Math.floor(Math.random() * (width - 2)) + 1;
-    let coinY = Math.floor(Math.random() * (height - 2)) + 1;
+    let coinX = Math.floor(Math.random() * (width - 1));
+    let coinY = Math.floor(Math.random() * (height - 1));
     let coin = document.createElement('div');
     coin.classList.add('coin');
     coin.style.position = 'absolute';
@@ -226,13 +238,38 @@ function spawnCoin() {
     coin.style.textAlign = 'center';
     coin.style.lineHeight = charSize + 'px';
     document.querySelector('.game-pattern').appendChild(coin);
-    //Make coin disappear after 5 seconds
+    //Make coin disappear after 8 seconds
     setTimeout(function () {
         document.querySelector('.game-pattern').removeChild(coin);
     }, 8000);
 }
+
+function spawnHeart() {
+    //Spawn a heart at random position 
+    let heartX = Math.floor(Math.random() * (width - 1));
+    let heartY = Math.floor(Math.random() * (height - 1));
+    let heart = document.createElement('div');
+    heart.classList.add('heart');
+    heart.style.position = 'absolute';
+    heart.style.left = offsetX + (heartX * charSize) + 'px';
+    heart.style.top = offsetY + (heartY * charSize) + 'px';
+    heart.style.width = charSize + 'px';
+    heart.style.height = charSize + 'px';
+    heart.style.backgroundImage = "url('image/heart.png')";
+    heart.style.backgroundRepeat = 'no-repeat';
+    heart.style.backgroundPosition = 'center';
+    heart.style.backgroundSize = 'cover';
+    heart.style.textAlign = 'center';
+    heart.style.lineHeight = charSize + 'px';
+    document.querySelector('.game-pattern').appendChild(heart);
+    //Make heart disappear after 8 seconds
+    setTimeout(function () {
+        document.querySelector('.game-pattern').removeChild(heart);
+    }, 8000);
+}
+
 function spawnObstacle() {
-    //Create 50-250 obstacles
+    //Create obstacles based on score
     if (score <= 20) {
         numObstacle = Math.floor(Math.random() * 40) + 20;
     }
@@ -253,7 +290,6 @@ function spawnObstacle() {
     }
     //Spawn obstacles
     for (let i = 0; i < numObstacle; i++) {
-        //Spawn an obstacle at random position in the board
         let obstacleX = Math.floor(Math.random() * (width - 1));
         let obstacleY = Math.floor(Math.random() * (height - 1));
         let obstacle = document.createElement('div');
@@ -263,7 +299,7 @@ function spawnObstacle() {
         obstacle.style.top = offsetY + (obstacleY * charSize) + 'px';
         obstacle.style.width = charSize + 'px';
         obstacle.style.height = charSize + 'px';
-        obstacle.style.backgroundImage = "url('image/caution.png')";
+        obstacle.style.backgroundImage = "url('image/caution.png')";    //First, make obstacle appear as caution sign to warn player
         obstacle.style.backgroundRepeat = 'no-repeat';
         obstacle.style.backgroundPosition = 'center';
         obstacle.style.backgroundSize = 'cover';
@@ -273,10 +309,11 @@ function spawnObstacle() {
         document.querySelector('.game-pattern').appendChild(obstacle);
 
     }
-    let audio2 = new Audio('audio/caution.mp3');
-    audio2.volume = 0.2;
-    audio2.play();
-    //Make spike appear
+    //Play caution sound
+    let audio = new Audio('audio/caution.mp3');
+    audio.volume = 0.2;
+    audio.play();
+    //Make obstacles appear after 1 second
     setTimeout(function () {
         document.querySelectorAll('.obstacle').forEach(obstacle => {
             obstacle.style.backgroundImage = "url('image/spike.png')";
@@ -285,40 +322,58 @@ function spawnObstacle() {
             obstacle.style.backgroundSize = 'cover';
             obstacle.textContent = '';
             obstacle.style.zIndex = '2';    //Bring character to front
-            spikeAppeared = true;
         });
+        spikeAppeared = true;
+        updateScore();
     }, 1000);
     
-    //Make spike disappear
+    //Make spike disappear 
     setTimeout(function () {
         document.querySelectorAll('.obstacle').forEach(obstacle => {
-            obstacle.remove(); 
-            spikeAppeared = false;
+            document.querySelector('.game-pattern').removeChild(obstacle);
         });
+        spikeAppeared = false;
+        lifeDropped = false;
     }, 1500);
 }
 
-setInterval(function updateScore() {
-    //Check if character is on obstacle
+
+function updateScore() {
+    // Check if character is on obstacle
     let char = document.getElementById('character');
     let obstacles = document.querySelectorAll('.obstacle');
-    
-    obstacles.forEach(obstacle => {
+    obstacles.forEach((obstacle) => {
         if (!gameOver && spikeAppeared) {
             if (obstacle.style.left === char.style.left && obstacle.style.top === char.style.top) {
-                gameOver = true;
-                clearInterval(obstacleInterval);
-                clearInterval(coinInterval);
-                alert('Game Over! Your score is ' + score);
-                char.style.backgroundImage = "url('image/skull.webp')";
-                document.querySelectorAll('.coin').forEach(coin => {
-                    coin.remove();
-                });
+                if (!lifeDropped) {
+                    life--;
+                    lifeDropped = true;
+                    // Remove 1 heart
+                    let life_board = document.querySelector('.lifeboard').lastElementChild;
+                    document.querySelector('.lifeboard').removeChild(life_board);
+                    let audio = new Audio('audio/hit.mp3');
+                    audio.volume = 0.2;
+                    audio.play();
+                }
+                if (life < 1) {
+                    gameOver = true;
+                    clearInterval(obstacleInterval);
+                    clearInterval(coinInterval);
+                    clearInterval(heartInterval);
+                    alert('Game Over! Your score is ' + score);
+                    char.style.backgroundImage = "url('image/skull.webp')";
+                    document.querySelectorAll('.coin').forEach((coin) => {
+                        coin.remove();
+                    });
+                    document.querySelectorAll('.heart').forEach((heart) => {
+                        heart.remove();
+                    });
+                }
             }
         }
     });
-}, 1);
-
+}
+setInterval(updateScore, 1);
 
 setInterval(function updateCoin() {
     let coins = document.querySelectorAll('.coin');
@@ -336,15 +391,44 @@ setInterval(function updateCoin() {
         }
     });
 }, 1);
+
+setInterval(function updateHeart() {
+    let hearts = document.querySelectorAll('.heart');
+    let char = document.getElementById('character');
+    hearts.forEach(heart => {
+        if (!gameOver) {
+            if (heart.style.left === char.style.left && heart.style.top === char.style.top) {
+                if (life < 3) {
+                    life++;
+                    //Append heart to life bar
+                    let element = document.createElement('div');
+                    element.classList.add('life');
+                    element.style.width = '30px';
+                    element.style.height = '30px';
+                    element.style.backgroundImage = "url('image/heart.png')";
+                    element.style.backgroundSize = '30px 30px';
+                    element.style.backgroundRepeat = 'no-repeat';
+                    document.querySelector('.lifeboard').appendChild(element);
+                }
+                heart.remove();
+            }
+        }
+    });
+}, 1);
+
 function resetGame() {
-    
     score = 0;
-    document.getElementById('score').innerHTML = score;
     charX = 0;
     charY = 0;
+    numObstacle = 0;
     gameOver = false;
+    spikeAppeared = false;
+    lifeDropped = false;
+    life = 3;
     clearInterval(obstacleInterval);
     clearInterval(coinInterval);
+    clearInterval(heartInterval);
+    document.getElementById('score').innerHTML = score;
     document.querySelector('.start-btn').disabled = false;
     document.querySelector('.game-pattern').innerHTML = `
         <div class="desc">

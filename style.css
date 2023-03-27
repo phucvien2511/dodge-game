@@ -78,6 +78,13 @@
     height: 40px;
 }
 
+.lifeboard {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
 .start-btn, .reset-btn {
     width: 200px;
     height: 50px;
