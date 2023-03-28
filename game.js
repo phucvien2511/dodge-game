@@ -1,3 +1,8 @@
+const bgAudio = new Audio('audio/bg.aac');
+bgAudio.volume = 0.5;
+bgAudio.loop = true;
+bgAudio.currentTime = 24;
+
 const charSize = 40;
 const offsetX = 50;
 const offsetY = 100;
@@ -21,26 +26,19 @@ let movementListener = null;
 let spikeAppeared = false;
 let lifeDropped = false;
 
-let bgAudio = new Audio('audio/bg.mp3');
-bgAudio.volume = 0.5;
-bgAudio.loop = true;
-bgAudio.play();
-bgAudio.currentTime = 25;
-// let soundState = true;
-// function triggerSound() {
-//     if (soundState) {
-//         bgAudio.volume = 0;
-//         soundState = false;
-//         document.getElementById('sound-btn-bg').src = 'image/volume_off.png';
-//     } 
-//     else {
-//         bgAudio.volume = 0.8;
-//         soundState = true;
-//         document.getElementById('sound-btn-bg').src = 'image/volume_on.png';
-//     }
-// }
 
 function initGame() {
+    //Append loading to the game pattern 
+    document.querySelector('.game-pattern').innerHTML = '';
+    let loading = document.createElement('div');
+    loading.classList.add('loading');
+    loading.innerHTML = 'Loading...';
+    document.querySelector('.game-pattern').appendChild(loading);
+    bgAudio.play();
+    setTimeout(function() {
+        //Remove loading
+        document.querySelector('.loading').remove();
+        enablePause = true;
     //Empty the instructions inside game pattern
     document.querySelector('.game-pattern').innerHTML = '';
     //Create board
@@ -179,6 +177,7 @@ function initGame() {
     //Disabled the button after clicked
     document.querySelector('.start-btn').disabled = true;
 
+    }, 5000);
 }
 
 function startGame() {
@@ -190,18 +189,14 @@ function startGame() {
     heartInterval = setInterval(spawnHeart, 8000);
     enemyInterval = setInterval(spawnEnemy, 5000);
     //Stop the spawn when game over
-    
     if (gameOver) {
         clearInterval(obstacleInterval);
         clearInterval(coinInterval);
         clearInterval(heartInterval);
-        clearInterval(enemyInterval);
-        //Delete all inside game pattern
-        
+        clearInterval(enemyInterval);  
         return;
     }
-    
-}
+    }
 
 function spawnCutEffect(direction) {
     let cutEffect = document.createElement('div');
@@ -237,13 +232,12 @@ function spawnCutEffect(direction) {
             clearInterval(cutEffectInterval);
         }
     } , 15);
-    
+
 
 
 }
 let standListener = null;
 let direction = 'right';
-
 function controlCharacter() {
     //Use WASD to control the character
     let char = document.getElementById('character');
@@ -369,8 +363,8 @@ function controlCharacter() {
     };
 
     document.addEventListener('keyup', standListener);
-    
-}
+
+    }
 
 function spawnCoin() {
     //Spawn a coin at random position 
@@ -393,7 +387,7 @@ function spawnCoin() {
     setTimeout(function () {
         document.querySelector('.game-pattern').removeChild(coin);
     }, 8000);
-}
+    }
 
 function spawnHeart() {
     //Spawn a heart at random position 
@@ -416,7 +410,7 @@ function spawnHeart() {
     setTimeout(function () {
         document.querySelector('.game-pattern').removeChild(heart);
     }, 10000);
-}
+    }
 
 function spawnObstacle() {
     //Create obstacles based on score
@@ -476,7 +470,7 @@ function spawnObstacle() {
         spikeAppeared = true;
         updateScore();
     }, 1000);
-    
+
     //Make spike disappear 
     setTimeout(function () {
         document.querySelectorAll('.obstacle').forEach(obstacle => {
@@ -485,7 +479,7 @@ function spawnObstacle() {
         spikeAppeared = false;
         lifeDropped = false;
     }, 1500);
-}
+    }
 
 function spawnEnemy() {
     let enemyX = Math.floor(Math.random() * (width - 1));
@@ -497,7 +491,7 @@ function spawnEnemy() {
     enemy.style.top = offsetY + (enemyY * charSize) + 'px';
     enemy.style.width = charSize + 'px';
     enemy.style.height = charSize + 'px';
-    enemy.style.backgroundImage = "url('image/devil.gif')";
+    enemy.style.backgroundImage = "url('image/giaitich.jpg')";
     enemy.style.backgroundRepeat = 'no-repeat';
     enemy.style.backgroundPosition = 'center';
     enemy.style.backgroundSize = 'cover';
@@ -506,68 +500,226 @@ function spawnEnemy() {
     enemy.style.zIndex = '4';
     document.querySelector('.game-pattern').appendChild(enemy);
 }
+function updateEnemyAttack() {
+    let enemies = document.querySelectorAll('.enemy');
+    enemies.forEach((enemy) => {
+        //4 fireballs fly in 4 directions from out of enemy
+        let fireball_top = document.createElement('div');
+        fireball_top.classList.add('fireball');
+        fireball_top.style.position = 'absolute';
+        fireball_top.style.left = enemy.style.left;
+        fireball_top.style.top = enemy.style.top;
+        fireball_top.style.width = charSize + 'px';
+        fireball_top.style.height = charSize + 'px';
+        fireball_top.style.backgroundImage = "url('image/small_fireball.png')";
+        fireball_top.style.backgroundRepeat = 'no-repeat';
+        fireball_top.style.backgroundPosition = 'center';
+        fireball_top.style.backgroundSize = 'cover';
+        fireball_top.style.textAlign = 'center';
+        fireball_top.style.lineHeight = charSize + 'px';
+        fireball_top.style.zIndex = '4';
+        document.querySelector('.game-pattern').appendChild(fireball_top);
+        let fireball_bottom = document.createElement('div');
+        fireball_bottom.classList.add('fireball');
+        fireball_bottom.style.position = 'absolute';
+        fireball_bottom.style.left = enemy.style.left;
+        fireball_bottom.style.top = enemy.style.top;
+        fireball_bottom.style.width = charSize + 'px';
+        fireball_bottom.style.height = charSize + 'px';
+        fireball_bottom.style.backgroundImage = "url('image/small_fireball.png')";
+        fireball_bottom.style.backgroundRepeat = 'no-repeat';
+        fireball_bottom.style.backgroundPosition = 'center';
+        fireball_bottom.style.backgroundSize = 'cover';
+        fireball_bottom.style.textAlign = 'center';
+        fireball_bottom.style.lineHeight = charSize + 'px';
+        fireball_bottom.style.zIndex = '4';
+        document.querySelector('.game-pattern').appendChild(fireball_bottom);
+        let fireball_left = document.createElement('div');
+        fireball_left.classList.add('fireball');
+        fireball_left.style.position = 'absolute';
+        fireball_left.style.left = enemy.style.left;
+        fireball_left.style.top = enemy.style.top;
+        fireball_left.style.width = charSize + 'px';
+        fireball_left.style.height = charSize + 'px';
+        fireball_left.style.backgroundImage = "url('image/small_fireball.png')";
+        fireball_left.style.backgroundRepeat = 'no-repeat';
+        fireball_left.style.backgroundPosition = 'center';
+        fireball_left.style.backgroundSize = 'cover';
+        fireball_left.style.textAlign = 'center';
+        fireball_left.style.lineHeight = charSize + 'px';
+        fireball_left.style.zIndex = '4';
+        document.querySelector('.game-pattern').appendChild(fireball_left);
+        let fireball_right = document.createElement('div');
+        fireball_right.classList.add('fireball');
+        fireball_right.style.position = 'absolute';
+        fireball_right.style.left = enemy.style.left;
+        fireball_right.style.top = enemy.style.top;
+        fireball_right.style.width = charSize + 'px';
+        fireball_right.style.height = charSize + 'px';
+        fireball_right.style.backgroundImage = "url('image/small_fireball.png')";
+        fireball_right.style.backgroundRepeat = 'no-repeat';
+        fireball_right.style.backgroundPosition = 'center';
+        fireball_right.style.backgroundSize = 'cover';
+        fireball_right.style.textAlign = 'center';
+        fireball_right.style.lineHeight = charSize + 'px';
+        fireball_right.style.zIndex = '4';
+        document.querySelector('.game-pattern').appendChild(fireball_right);
+        //Fireballs move in 4 directions, 10 px every 25 ms
+        let fireball_top_x = parseInt(fireball_top.style.left);
+        let fireball_top_y = parseInt(fireball_top.style.top);
+        let fireball_bottom_x = parseInt(fireball_bottom.style.left);
+        let fireball_bottom_y = parseInt(fireball_bottom.style.top);
+        let fireball_left_x = parseInt(fireball_left.style.left);
+        let fireball_left_y = parseInt(fireball_left.style.top);
+        let fireball_right_x = parseInt(fireball_right.style.left);
+        let fireball_right_y = parseInt(fireball_right.style.top);
+        let fireball_top_interval = setInterval(() => {
+            fireball_top_y -= 5;
+            fireball_top.style.top = fireball_top_y + 'px';
+            if (fireball_top_y < 0) {
+                clearInterval(fireball_top_interval);
+                fireball_top.remove();
+            }
+        }, 20);
+        let fireball_bottom_interval = setInterval(() => {
+            fireball_bottom_y += 5;
+            fireball_bottom.style.top = fireball_bottom_y + 'px';
+            if (fireball_bottom_y > document.querySelector('.game-pattern').offsetHeight) {
+                clearInterval(fireball_bottom_interval);
+                fireball_bottom.remove();
+            }
+        }
+        , 20);
+        let fireball_left_interval = setInterval(() => {
+            fireball_left_x -= 5;
+            fireball_left.style.left = fireball_left_x + 'px';
+            if (fireball_left_x < 0) {
+                clearInterval(fireball_left_interval);
+                fireball_left.remove();
+            }
+        }
+        , 20);
+        let fireball_right_interval = setInterval(() => {
+            fireball_right_x += 5;
+            fireball_right.style.left = fireball_right_x + 'px';
+            if (fireball_right_x > document.querySelector('.game-pattern').offsetWidth) {
+                clearInterval(fireball_right_interval);
+                fireball_right.remove();
+            }
+        }
+        , 20);
+
+
+
+    });
+}
+setInterval(updateEnemyAttack, 3000);
 function updateEnemy() {
     //Check if the cut effect is on enemy
     let cut = document.querySelectorAll('.cut-effect');
     let enemies = document.querySelectorAll('.enemy');
     enemies.forEach((enemy) => {
-        cut.forEach((cut) => {
-            if (cut.style.left === enemy.style.left && cut.style.top === enemy.style.top) {
+        cut.forEach((cut_effect) => {
+            if (cut_effect.style.left === enemy.style.left && cut_effect.style.top === enemy.style.top) {
                 enemy.remove();
+                cut_effect.remove();
                 let audio = new Audio('audio/hit.mp3');
                 audio.volume = 0.2;
                 audio.play();
-                cut.remove();
+                //Display hit.gif on enemy
+                let hit = document.createElement('div');
+                hit.classList.add('hit');
+                hit.style.position = 'absolute';
+                hit.style.left = enemy.style.left;
+                hit.style.top = enemy.style.top;
+                hit.style.width = charSize + 'px';
+                hit.style.height = charSize + 'px';
+                hit.style.backgroundImage = "url('image/hit.gif')";
+                hit.style.backgroundRepeat = 'no-repeat';
+                hit.style.backgroundPosition = 'center';
+                hit.style.backgroundSize = 'cover';
+                hit.style.textAlign = 'center';
+                hit.style.lineHeight = charSize + 'px';
+                hit.style.zIndex = '4';
+                document.querySelector('.game-pattern').appendChild(hit);
+                setTimeout(() => {
+                    hit.remove();
+                }, 250);
             }
         });
+
     });
 }
 setInterval(updateEnemy, 1);
+let fireballHitPlayer = false;
+function reduceLife() {
+    let char = document.getElementById('character');
+    let prevBackground = char.style.backgroundImage;
+    if (!lifeDropped) {
+        life--;
+        lifeDropped = true;
+        fireballHitPlayer = false;
+        // Remove 1 heart
+        let life_board = document.querySelector('.lifeboard').lastElementChild;
+        document.querySelector('.lifeboard').removeChild(life_board);
+        let audio = new Audio('audio/hit.mp3');
+        audio.volume = 0.2;
+        audio.play();
+        char.style.backgroundImage = "url('image/knight_hurt.gif')";
+        char.style.backgroundPosition = 'center';
+        setTimeout(function () {
+            char.style.backgroundImage = prevBackground;
+        }, 500);
+    }
+    if (life < 1) {
+            gameOver = true;
+            clearInterval(obstacleInterval);
+            clearInterval(coinInterval);
+            clearInterval(heartInterval);
+            clearInterval(enemyInterval);
+            alert('Game Over! Your score is ' + score);
+            document.querySelector('.game-pattern').innerHTML = 'GAME OVER';
+            document.querySelectorAll('.coin').forEach((coin) => {
+                coin.remove();
+            });
+            document.querySelectorAll('.heart').forEach((heart) => {
+                heart.remove();
+            });
+            document.querySelectorAll('.obstacle').forEach((obstacle) => {
+                obstacle.remove();
+            });
+            document.querySelectorAll('.enemy').forEach((enemy) => {
+                enemy.remove();
+            });
+            
+    }
+}
+function checkEnemyHitPlayer() {
+    //Check if fireball_top, fireball_bottom, fireball_left, fireball_right hit player
+    let fireball_top = document.querySelectorAll('.fireball');
+    let char = document.getElementById('character');
+    fireball_top.forEach((fireball) => {
+        if (fireball.style.left === char.style.left && fireball.style.top === char.style.top) {
+            fireball.remove();
+            reduceLife();
+        }
+    });
+}
+setInterval(checkEnemyHitPlayer, 1);
+
 function updateScore() {
     // Check if character is on obstacle
     let char = document.getElementById('character');
-    let prevBackground = char.style.backgroundImage;
+    
     let obstacles = document.querySelectorAll('.obstacle');
     obstacles.forEach((obstacle) => {
         if (!gameOver && spikeAppeared) {
-            if (obstacle.style.left === char.style.left && obstacle.style.top === char.style.top) {
-                if (!lifeDropped) {
-                    life--;
-                    lifeDropped = true;
-                    // Remove 1 heart
-                    let life_board = document.querySelector('.lifeboard').lastElementChild;
-                    document.querySelector('.lifeboard').removeChild(life_board);
-                    let audio = new Audio('audio/hit.mp3');
-                    audio.volume = 0.2;
-                    audio.play();
-                    char.style.backgroundImage = "url('image/knight_hurt.gif')";
-                    char.style.backgroundPosition = 'center';
-                    setTimeout(function () {
-                        char.style.backgroundImage = prevBackground;
-                    }, 500);
-                }
-                if (life < 1) {
-                        gameOver = true;
-                        clearInterval(obstacleInterval);
-                        clearInterval(coinInterval);
-                        clearInterval(heartInterval);
-                        alert('Game Over! Your score is ' + score);
-                        document.querySelector('.game-pattern').innerHTML = 'GAME OVER';
-                        document.querySelectorAll('.coin').forEach((coin) => {
-                            coin.remove();
-                        });
-                        document.querySelectorAll('.heart').forEach((heart) => {
-                            heart.remove();
-                        });
-                        document.querySelectorAll('.obstacle').forEach((obstacle) => {
-                            obstacle.remove();
-                        });
-                        
-                }
+            if ((obstacle.style.left === char.style.left && obstacle.style.top === char.style.top)) {
+                reduceLife();
             }
         }
     });
-    
+
 }
 setInterval(updateScore, 1);
 setInterval(function updateCoin() {
@@ -636,12 +788,13 @@ function resetGame() {
                 <div>S: Move down</div>
                 <div>A: Move left</div>
                 <div>D: Move right</div>
-                <div>Space: Attack (On beta)</div>
+                <div>Space: Attack</div>
             </div>
-            <div>Try to dodge the obstacles and collect as many coins as you can!</div>
+            <div>Try to dodge the obstacles, attack enemies and collect as many coins as you can!</div>
             <div>As you get more coins, the nightmare will become more and more intense! Watch out your step!</div>
             <div style="color: red;">Before playing, please turn off Telex and use headphones for better experience.</div>
         </div>
     `;
     return;
 }
+

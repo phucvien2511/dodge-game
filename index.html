@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Knightmare</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="preload" href="audio/bg.aac" as="audio">
 </head>
 <body>
     <div class="header">Knightmare</div>
@@ -17,6 +18,7 @@
             <div class="lifeboard"></div>
             <button type="button" onclick="initGame()" class="start-btn">Start</button>
             <button type="button" onclick="resetGame()" class="reset-btn">Reset</button>
+            <!-- <button type="button" onclick="pauseGame()" class="start-btn pause-btn">Pause</button> -->
             <button type="button" onclick="triggerSound()" class="sound-btn"><img src="image/volume_on.png" alt="Volume button" id="sound-btn-bg"></button>
         </div>
         <div class="game-pattern">
@@ -28,9 +30,9 @@
                     <div>S: Move down</div>
                     <div>A: Move left</div>
                     <div>D: Move right</div>
-                    <div>Space: Attack (On beta)</div>
+                    <div>Space: Attack</div>
                 </div>
-                <div>Try to dodge the obstacles and collect as many coins as you can!</div>
+                <div>Try to dodge the obstacles, attack enemies and collect as many coins as you can!</div>
                 <div>As you get more coins, the nightmare will become more and more intense! Watch out your step!</div>
                 <div style="color: red;">Before playing, please turn off Telex and use headphones for better experience.</div>
             </div>

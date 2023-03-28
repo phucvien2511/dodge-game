@@ -46,6 +46,18 @@
     line-height: 1.5;
 }
 
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 400px;
+    height: 400px;
+    margin: 0 auto;
+    background-image: url('image/loading.gif');
+    background-size: 200px 200px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
 /* Divide game pattern into 30x18 board with gray border */
 .board {
     width: 40px;
