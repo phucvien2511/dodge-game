@@ -14,7 +14,7 @@
 }
 .header {
     
-    font-size: 40px;
+    font-size: 30px;
     font-weight: bold;
     margin: 30px auto;
     text-align: center;
@@ -54,10 +54,10 @@
 }
 /* Create character */
 #character {
-    background-image: url('image/knight.png');
-    background-size: 40px 40px;
+    
+    background-size: 68px 68px;
     background-repeat: no-repeat;
-    background-position: center;
+    
     z-index: 3;
 }
 .scoreboard {
@@ -85,21 +85,38 @@
     align-items: center;
 }
 
-.start-btn, .reset-btn {
-    width: 200px;
+.start-btn, .reset-btn{
+    width: 150px;
     height: 50px;
-    font-size: 20px;
+    font-size: 18px;
     font-weight: bold;
     margin: 30px auto;
     text-align: center;
     background-color: #f1c40f;
     border: 5px solid gray;
-    border-radius: 5px;
+    border-radius: 8px;
     cursor: pointer;
     display: flex;
     justify-content: center;
+    align-items: center;
 }
-
+.sound-btn {
+    width: 50px;
+    height: 50px;
+    margin: 30px auto;
+    text-align: center;
+    background-color: #f1c40f;
+    border: 5px solid gray;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.sound-btn img {
+    width: 30px;
+    height: 25px;
+}
 /* .desc > * {
     margin-left: 50px;
 } */
@@ -108,3 +125,4 @@
     text-align: center;
     font-size: 12px;
 }
+

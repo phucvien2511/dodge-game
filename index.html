@@ -15,8 +15,9 @@
                 <div id="score">0</div>
             </div>
             <div class="lifeboard"></div>
-            <button type="button" onclick="initGame()" class="start-btn">Start Game</button>
-            <button type="button" onclick="resetGame()" class="reset-btn">Reset Game</button>
+            <button type="button" onclick="initGame()" class="start-btn">Start</button>
+            <button type="button" onclick="resetGame()" class="reset-btn">Reset</button>
+            <button type="button" onclick="triggerSound()" class="sound-btn"><img src="image/volume_on.png" alt="Volume button" id="sound-btn-bg"></button>
         </div>
         <div class="game-pattern">
             <div class="desc">
@@ -27,6 +28,7 @@
                     <div>S: Move down</div>
                     <div>A: Move left</div>
                     <div>D: Move right</div>
+                    <div>Space: Attack (On beta)</div>
                 </div>
                 <div>Try to dodge the obstacles and collect as many coins as you can!</div>
                 <div>As you get more coins, the nightmare will become more and more intense! Watch out your step!</div>

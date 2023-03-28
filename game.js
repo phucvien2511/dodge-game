@@ -15,10 +15,33 @@ let gameOver = false;
 let obstacleInterval = null;
 let coinInterval = null;
 let heartInterval = null;
+let enemyInterval = null;
 let numObstacle = 0;
 let movementListener = null;
 let spikeAppeared = false;
 let lifeDropped = false;
+
+let bgAudio = new Audio('audio/bg.mp3');
+bgAudio.volume = 0.8;
+bgAudio.loop = true;
+bgAudio.play();
+bgAudio.currentTime = 25;
+// let soundState = true;
+// function triggerSound() {
+//     if (soundState) {
+//         bgAudio.volume = 0;
+//         soundState = false;
+//         document.getElementById('sound-btn-bg').src = 'image/volume_off.png';
+
+//     } 
+//     else {
+//         bgAudio.volume = 0.8;
+//         soundState = true;
+//         document.getElementById('sound-btn-bg').src = 'image/volume_on.png';
+//     }
+
+// }
+
 function initGame() {
     //Empty the instructions inside game pattern
     document.querySelector('.game-pattern').innerHTML = '';
@@ -37,7 +60,7 @@ function initGame() {
             element.style.backgroundPosition = 'center';
             element.style.backgroundSize = 'cover';
             element.style.textAlign = 'center';
-            element.style.border = '1px solid #b9b7bd';
+            //element.style.border = '1px solid #b9b7bd';
             document.querySelector('.game-pattern').appendChild(element);
         }
     }
@@ -55,7 +78,6 @@ function initGame() {
         element.style.backgroundPosition = 'bottom';
         element.style.backgroundSize = '40px 20px';
         element.style.textAlign = 'center';
-        // element.style.border = '1px solid #b9b7bd';
         document.querySelector('.game-pattern').appendChild(element);
     }
     //Bottom border
@@ -72,7 +94,6 @@ function initGame() {
         element.style.backgroundPosition = 'top';
         element.style.backgroundSize = '40px 20px';
         element.style.textAlign = 'center';
-        // element.style.border = '1px solid #b9b7bd';
         document.querySelector('.game-pattern').appendChild(element);
     }
     //Left border
@@ -89,7 +110,6 @@ function initGame() {
         element.style.backgroundPosition = 'right';
         element.style.backgroundSize = '20px 40px';
         element.style.textAlign = 'center';
-        // element.style.border = '1px solid #b9b7bd';
         document.querySelector('.game-pattern').appendChild(element);
     }
     //Right border
@@ -106,7 +126,6 @@ function initGame() {
         element.style.backgroundPosition = 'left';
         element.style.backgroundSize = '20px 40px';
         element.style.textAlign = 'center';
-        // element.style.border = '1px solid #b9b7bd';
         document.querySelector('.game-pattern').appendChild(element);
     }
     //Fill the gap at the corners
@@ -123,7 +142,6 @@ function initGame() {
         element.style.backgroundPosition = bgPos;
         element.style.backgroundSize = '20px 20px';
         element.style.textAlign = 'center';
-        // element.style.border = '1px solid #b9b7bd';
         document.querySelector('.game-pattern').appendChild(element);
     }
     //Top left corner
@@ -155,6 +173,8 @@ function initGame() {
     charElement.style.top = offsetY + 'px';
     charElement.style.width = charSize + 'px';
     charElement.style.height = charSize + 'px';
+    charElement.style.backgroundImage = "url('image/knight_right.gif')";
+    charElement.style.backgroundPosition = 'top 50% right 20%';
     document.querySelector('.game-pattern').appendChild(charElement);
     //Start game
     startGame();
@@ -169,15 +189,60 @@ function startGame() {
     //Spawn new obstacles, coins and hearts every 3 seconds
     obstacleInterval = setInterval(spawnObstacle, 3000);
     coinInterval = setInterval(spawnCoin, 3000);
-    heartInterval = setInterval(spawnHeart, 3000);
+    heartInterval = setInterval(spawnHeart, 8000);
+    enemyInterval = setInterval(spawnEnemy, 5000);
     //Stop the spawn when game over
+    
     if (gameOver) {
         clearInterval(obstacleInterval);
         clearInterval(coinInterval);
         clearInterval(heartInterval);
+        //Delete all inside game pattern
+        
         return;
     }
+    
 }
+
+function spawnCutEffect(direction) {
+    let cutEffect = document.createElement('div');
+    cutEffect.classList.add('cut-effect');
+    cutEffect.style.position = 'absolute';
+    cutEffect.style.left = charX*charSize + offsetX + 'px';
+    cutEffect.style.top = charY*charSize + offsetY + 'px';
+    cutEffect.style.width = charSize + 'px';
+    cutEffect.style.height = charSize + 'px';
+    cutEffect.style.backgroundImage = "url('image/cut.png')";
+    cutEffect.style.backgroundRepeat = 'no-repeat';
+    cutEffect.style.backgroundSize = '100% 100%';
+    cutEffect.style.backgroundPosition = direction;
+    document.querySelector('.game-pattern').appendChild(cutEffect);
+    let cutEffectInterval = setInterval(function() {
+        if (direction === 'left') {
+            cutEffect.style.left = cutEffect.offsetLeft - 10 + 'px';
+            cutEffect.style.transform = 'rotateY(180deg)';
+        }
+        else if (direction === 'right') {
+            cutEffect.style.left = cutEffect.offsetLeft + 10 + 'px';
+        }
+        else if (direction === 'up') {
+            cutEffect.style.top = cutEffect.offsetTop - 10 + 'px';
+            cutEffect.style.transform = 'rotateX(-180deg)';
+        }
+        else if (direction === 'down') {
+            cutEffect.style.top = cutEffect.offsetTop + 10 + 'px';
+        }
+        if (cutEffect.offsetLeft < offsetX || cutEffect.offsetLeft > offsetX + (width - 1)*charSize || cutEffect.offsetTop < offsetY || cutEffect.offsetTop > offsetY + (height - 1)*charSize) {
+            cutEffect.remove();
+            clearInterval(cutEffectInterval);
+        }
+    } , 15);
+    
+
+
+}
+let standListener = null;
+let direction = 'right';
 
 function controlCharacter() {
     //Use WASD to control the character
@@ -185,39 +250,126 @@ function controlCharacter() {
     if (movementListener) {
         document.removeEventListener('keydown', movementListener);
     }
+    //Only move on 2nd keydown, the first keydown is only to change the direction
     movementListener = function(e) {
         if (e.keyCode === 87) {
+
             //W
-            charY--;
+            if (direction !== 'up') {
+                direction = 'up';
+            }
+            else charY--;
+            // direction = 'up';
+            // charY--;
             if (charY < 0) {
                 charY = 0;
             }
+            char.style.backgroundImage = "url('image/knight_up.gif')";
+            char.style.backgroundPosition = 'top 50% center';
         }
         else if (e.keyCode === 65) {
             //A
-            charX--;
+            if (direction !== 'left') {
+                direction = 'left';
+            }
+            else charX--;
+            // direction = 'left';
+            // charX--;
             if (charX < 0) {
                 charX = 0;
             }
+            char.style.backgroundImage = "url('image/knight_left.gif')";
+            char.style.backgroundPosition = 'top 50% left 20%';
         }
         else if (e.keyCode === 83) {
             //S
-            charY++;
+            if (direction !== 'down') {
+                direction = 'down';
+            }
+            else charY++;
+            // direction = 'down';
+            // charY++;
             if (charY > height - 2) {
                 charY = height - 2;
             }
+            char.style.backgroundImage = "url('image/knight_down.gif')";
+            char.style.backgroundPosition = 'top 50% center';
         }
         else if (e.keyCode === 68) {
             //D
-            charX++;
+            if (direction !== 'right') {
+                direction = 'right';
+            }
+            else charX++;
+            // direction = 'right';
+            // charX++;
             if (charX > width - 2) {
                 charX = width - 2;
             }
+            char.style.backgroundImage = "url('image/knight_right.gif')";
+            char.style.backgroundPosition = 'top 50% right 20%';
+        }
+        //Press space to attack
+        else if (e.keyCode === 32) {
+            if (direction === 'up') {
+                char.style.backgroundImage = "url('image/knight_atk_top.gif')";
+                spawnCutEffect('up');
+            }
+            else if (direction === 'left') {
+                char.style.backgroundImage = "url('image/knight_atk_left.gif')";
+                spawnCutEffect('left');
+            }
+            else if (direction === 'down') {
+                char.style.backgroundImage = "url('image/knight_atk_down.gif')";
+                spawnCutEffect('down');
+            }
+            else if (direction === 'right') {
+                char.style.backgroundImage = "url('image/knight_atk_right.gif')";
+                spawnCutEffect('right');
+            }
+            
         }
         char.style.left = offsetX + (charX * charSize) + 'px';
         char.style.top = offsetY + (charY * charSize) + 'px';
     };
+
     document.addEventListener('keydown', movementListener);
+    //Add timeout to attack animation only stop after 0.5s when space is released
+    if (standListener) {
+        document.removeEventListener('keyup', standListener);
+    }
+    standListener = function(e) {
+        if (e.keyCode === 32) {
+            if (direction === 'up') {
+                setTimeout(function() {
+                    char.style.backgroundImage = "url('image/knight_up.gif')";
+                    char.style.backgroundPosition = 'top 50% center';
+                }, 600);
+            }
+            else if (direction === 'left') {
+                setTimeout(function() {
+                    char.style.backgroundImage = "url('image/knight_left.gif')";
+                    char.style.backgroundPosition = 'top 50% left 20%';
+                }, 600);
+            }
+            else if (direction === 'down') {
+                setTimeout(function() {
+                    char.style.backgroundImage = "url('image/knight_down.gif')";
+                    char.style.backgroundPosition = 'top 50% center';
+                }, 600);
+            }
+            else if (direction === 'right') {
+                setTimeout(function() {
+                    char.style.backgroundImage = "url('image/knight_right.gif')";
+                    char.style.backgroundPosition = 'top 50% right 20%';
+                }, 600);
+                
+            }
+        }
+    };
+
+    document.addEventListener('keyup', standListener);
+    
 }
 
 function spawnCoin() {
@@ -233,9 +385,8 @@ function spawnCoin() {
     coin.style.height = charSize + 'px';
     coin.style.backgroundImage = "url('image/coin.png')";
     coin.style.backgroundRepeat = 'no-repeat';
-    coin.style.backgroundPosition = 'center';
-    coin.style.backgroundSize = 'cover';
-    coin.style.textAlign = 'center';
+    coin.style.backgroundPosition = 'center bottom';
+    coin.style.backgroundSize = '25px 25px';
     coin.style.lineHeight = charSize + 'px';
     document.querySelector('.game-pattern').appendChild(coin);
     //Make coin disappear after 8 seconds
@@ -256,16 +407,15 @@ function spawnHeart() {
     heart.style.width = charSize + 'px';
     heart.style.height = charSize + 'px';
     heart.style.backgroundImage = "url('image/heart.png')";
-    heart.style.backgroundRepeat = 'no-repeat';
     heart.style.backgroundPosition = 'center';
-    heart.style.backgroundSize = 'cover';
-    heart.style.textAlign = 'center';
+    heart.style.backgroundSize = '25px 25px';
+    heart.style.backgroundRepeat = 'no-repeat';
     heart.style.lineHeight = charSize + 'px';
     document.querySelector('.game-pattern').appendChild(heart);
     //Make heart disappear after 8 seconds
     setTimeout(function () {
         document.querySelector('.game-pattern').removeChild(heart);
-    }, 8000);
+    }, 10000);
 }
 
 function spawnObstacle() {
@@ -337,10 +487,45 @@ function spawnObstacle() {
     }, 1500);
 }
 
-
+function spawnEnemy() {
+    let enemyX = Math.floor(Math.random() * (width - 1));
+    let enemyY = Math.floor(Math.random() * (height - 1));
+    let enemy = document.createElement('div');
+    enemy.classList.add('enemy');
+    enemy.style.position = 'absolute';
+    enemy.style.left = offsetX + (enemyX * charSize) + 'px';
+    enemy.style.top = offsetY + (enemyY * charSize) + 'px';
+    enemy.style.width = charSize + 'px';
+    enemy.style.height = charSize + 'px';
+    enemy.style.backgroundImage = "url('image/devil.gif')";
+    enemy.style.backgroundRepeat = 'no-repeat';
+    enemy.style.backgroundPosition = 'center';
+    enemy.style.backgroundSize = 'cover';
+    enemy.style.textAlign = 'center';
+    enemy.style.lineHeight = charSize + 'px';
+    enemy.style.zIndex = '4';
+    document.querySelector('.game-pattern').appendChild(enemy);
+}
+function updateEnemy() {
+    //Check if the cut effect is on enemy
+    let cut = document.querySelectorAll('.cut-effect');
+    let enemies = document.querySelectorAll('.enemy');
+    enemies.forEach((enemy) => {
+        cut.forEach((cut) => {
+            if (cut.style.left === enemy.style.left && cut.style.top === enemy.style.top) {
+                document.querySelector('.game-pattern').removeChild(enemy);
+                let audio = new Audio('audio/hit.mp3');
+                audio.volume = 0.2;
+                audio.play();
+            }
+        });
+    });
+}
+setInterval(updateEnemy, 1);
 function updateScore() {
     // Check if character is on obstacle
     let char = document.getElementById('character');
+    let prevBackground = char.style.backgroundImage;
     let obstacles = document.querySelectorAll('.obstacle');
     obstacles.forEach((obstacle) => {
         if (!gameOver && spikeAppeared) {
@@ -354,27 +539,36 @@ function updateScore() {
                     let audio = new Audio('audio/hit.mp3');
                     audio.volume = 0.2;
                     audio.play();
+                    char.style.backgroundImage = "url('image/knight_hurt.gif')";
+                    char.style.backgroundPosition = 'center';
+                    setTimeout(function () {
+                        char.style.backgroundImage = prevBackground;
+                    }, 500);
                 }
                 if (life < 1) {
-                    gameOver = true;
-                    clearInterval(obstacleInterval);
-                    clearInterval(coinInterval);
-                    clearInterval(heartInterval);
-                    alert('Game Over! Your score is ' + score);
-                    char.style.backgroundImage = "url('image/skull.webp')";
-                    document.querySelectorAll('.coin').forEach((coin) => {
-                        coin.remove();
-                    });
-                    document.querySelectorAll('.heart').forEach((heart) => {
-                        heart.remove();
-                    });
+                        gameOver = true;
+                        clearInterval(obstacleInterval);
+                        clearInterval(coinInterval);
+                        clearInterval(heartInterval);
+                        alert('Game Over! Your score is ' + score);
+                        document.querySelector('.game-pattern').innerHTML = 'GAME OVER';
+                        document.querySelectorAll('.coin').forEach((coin) => {
+                            coin.remove();
+                        });
+                        document.querySelectorAll('.heart').forEach((heart) => {
+                            heart.remove();
+                        });
+                        document.querySelectorAll('.obstacle').forEach((obstacle) => {
+                            obstacle.remove();
+                        });
+                        
                 }
             }
         }
     });
+    
 }
 setInterval(updateScore, 1);
-
 setInterval(function updateCoin() {
     let coins = document.querySelectorAll('.coin');
     let char = document.getElementById('character');
@@ -428,8 +622,10 @@ function resetGame() {
     clearInterval(obstacleInterval);
     clearInterval(coinInterval);
     clearInterval(heartInterval);
+    clearInterval(enemyInterval);
     document.getElementById('score').innerHTML = score;
     document.querySelector('.start-btn').disabled = false;
+    document.querySelector('.lifeboard').innerHTML = '';
     document.querySelector('.game-pattern').innerHTML = `
         <div class="desc">
             <div>Once upon a time, there was a HCMUT student who found himself stuck inside a dream with Deadline devil. In this dream, he becomes a knight who is never gonna give you up...</div>
@@ -439,6 +635,7 @@ function resetGame() {
                 <div>S: Move down</div>
                 <div>A: Move left</div>
                 <div>D: Move right</div>
+                <div>Space: Attack (On beta)</div>
             </div>
             <div>Try to dodge the obstacles and collect as many coins as you can!</div>
             <div>As you get more coins, the nightmare will become more and more intense! Watch out your step!</div>
