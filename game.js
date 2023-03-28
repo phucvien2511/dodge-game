@@ -22,7 +22,7 @@ let spikeAppeared = false;
 let lifeDropped = false;
 
 let bgAudio = new Audio('audio/bg.mp3');
-bgAudio.volume = 0.8;
+bgAudio.volume = 0.5;
 bgAudio.loop = true;
 bgAudio.play();
 bgAudio.currentTime = 25;
@@ -32,14 +32,12 @@ bgAudio.currentTime = 25;
 //         bgAudio.volume = 0;
 //         soundState = false;
 //         document.getElementById('sound-btn-bg').src = 'image/volume_off.png';
-
 //     } 
 //     else {
 //         bgAudio.volume = 0.8;
 //         soundState = true;
 //         document.getElementById('sound-btn-bg').src = 'image/volume_on.png';
 //     }
-
 // }
 
 function initGame() {
@@ -197,6 +195,7 @@ function startGame() {
         clearInterval(obstacleInterval);
         clearInterval(coinInterval);
         clearInterval(heartInterval);
+        clearInterval(enemyInterval);
         //Delete all inside game pattern
         
         return;
@@ -227,10 +226,11 @@ function spawnCutEffect(direction) {
         }
         else if (direction === 'up') {
             cutEffect.style.top = cutEffect.offsetTop - 10 + 'px';
-            cutEffect.style.transform = 'rotateX(-180deg)';
+            cutEffect.style.backgroundImage = "url('image/cutU.png')";
         }
         else if (direction === 'down') {
             cutEffect.style.top = cutEffect.offsetTop + 10 + 'px';
+            cutEffect.style.backgroundImage = "url('image/cutD.png')";
         }
         if (cutEffect.offsetLeft < offsetX || cutEffect.offsetLeft > offsetX + (width - 1)*charSize || cutEffect.offsetTop < offsetY || cutEffect.offsetTop > offsetY + (height - 1)*charSize) {
             cutEffect.remove();
@@ -513,10 +513,11 @@ function updateEnemy() {
     enemies.forEach((enemy) => {
         cut.forEach((cut) => {
             if (cut.style.left === enemy.style.left && cut.style.top === enemy.style.top) {
-                document.querySelector('.game-pattern').removeChild(enemy);
+                enemy.remove();
                 let audio = new Audio('audio/hit.mp3');
                 audio.volume = 0.2;
                 audio.play();
+                cut.remove();
             }
         });
     });
