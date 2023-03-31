@@ -1,8 +1,9 @@
+/* Set background audio */
 const bgAudio = new Audio('audio/bg.aac');
 bgAudio.volume = 0.5;
 bgAudio.loop = true;
 bgAudio.currentTime = 24;
-
+/* Set game mechanic constants */
 const charSize = 40;
 const offsetX = 50;
 const offsetY = 100;
@@ -11,37 +12,38 @@ const height = document.querySelector('.game-pattern').offsetHeight / charSize;
 const board = document.querySelector('.game-pattern');
 const borderImg = 'url("image/wall2.jpg")';
 const mapImg = 'url("image/wall.jpg")';
-
+/* Set spawn period (in milliseconds) */
+const obstacleSpawnPeriod = 3000;
+const coinSpawnPeriod = 3000;
+const heartSpawnPeriod = 8000;
+const enemySpawnPeriod = 5000;
+const cautionPeriod = 1000;
+/* Set disappear period (in milliseconds) */
+const coinDisappearPeriod = 8000;
+const heartDisappearPeriod = 10000;
+const enemyDisappearPeriod = 10000;
+/* Set attack period (in milliseconds) */
+const enemyAttackPeriod = 3000;
+/* Set coordinate variables */
 let charX = 0;
 let charY = 0;
+let direction = 'right';
+/* Set game status variables */
+let gameOver = false;
 let score = 0;
 let life = 3;
-let gameOver = false;
+let numObstacle = 0;
+let spikeAppeared = false;
+let lifeDropped = false;
+let standListener = null;
+let movementListener = null;
 let obstacleInterval = null;
 let coinInterval = null;
 let heartInterval = null;
 let enemyInterval = null;
-let numObstacle = 0;
-let movementListener = null;
-let spikeAppeared = false;
-let lifeDropped = false;
-
-
-function initGame() {
-    //Append loading to the game pattern 
-    document.querySelector('.game-pattern').innerHTML = '';
-    let loading = document.createElement('div');
-    loading.classList.add('loading');
-    loading.innerHTML = 'Loading...';
-    document.querySelector('.game-pattern').appendChild(loading);
-    bgAudio.play();
-    setTimeout(function() {
-        //Remove loading
-        document.querySelector('.loading').remove();
-        enablePause = true;
-    //Empty the instructions inside game pattern
-    document.querySelector('.game-pattern').innerHTML = '';
-    //Create board
+/* Functions start from here */
+//Create the map
+function createMap() {
     for (let i = 0; i < width - 1; i++) {
         for (let j = 0; j < height - 1; j++) {
             let element = document.createElement('div');
@@ -56,10 +58,12 @@ function initGame() {
             element.style.backgroundPosition = 'center';
             element.style.backgroundSize = 'cover';
             element.style.textAlign = 'center';
-            //element.style.border = '1px solid #b9b7bd';
             document.querySelector('.game-pattern').appendChild(element);
         }
     }
+}
+//Create map's borders
+function createBorders() {
     //Top border
     for (let i = 0; i < width - 1; i++) {
         let element = document.createElement('div');
@@ -148,8 +152,10 @@ function initGame() {
     fillCorner(-1, height-1, 'top right');
     //Bottom right corner
     fillCorner(width-1, height-1, 'top left');
-
-    //Create lifeboard
+}
+//Create the life board to display the number of lives left
+function createLifeBoard() {
+    //Create life board
     for (let i = 0; i < 3; i++) {
         let element = document.createElement('div');
         element.classList.add('life');
@@ -160,8 +166,9 @@ function initGame() {
         element.style.backgroundRepeat = 'no-repeat';
         document.querySelector('.lifeboard').appendChild(element);
     }
-
-    //Create character
+}
+//Create character
+function createCharacter() {
     let charElement = document.createElement('div');
     charElement.setAttribute('id', 'character');
     charElement.style.position = 'absolute';
@@ -172,33 +179,54 @@ function initGame() {
     charElement.style.backgroundImage = "url('image/knight_right.gif')";
     charElement.style.backgroundPosition = 'top 50% right 20%';
     document.querySelector('.game-pattern').appendChild(charElement);
-    //Start game
-    startGame();
-    //Disabled the button after clicked
-    document.querySelector('.start-btn').disabled = true;
-
+}
+function displayLoadingScreen() {
+    document.querySelector('.game-pattern').innerHTML = '';
+    let loading = document.createElement('div');
+    loading.classList.add('loading');
+    loading.innerHTML = 'Loading...';
+    document.querySelector('.game-pattern').appendChild(loading);
+}
+//Initialize the game
+function initGame() {
+    displayLoadingScreen();
+    //Start playing the background music
+    bgAudio.play();
+    //Game start after 5 seconds
+    setTimeout(function() {
+        //Remove loading screen
+        document.querySelector('.loading').remove();
+        //Empty the game pattern before creating objects
+        document.querySelector('.game-pattern').innerHTML = '';
+        //Create the objects
+        createMap();
+        createBorders();
+        createLifeBoard();
+        createCharacter();
+        //Start game
+        startGame();
+        //Disabled the start button after clicked
+        document.querySelector('.start-btn').disabled = true;
     }, 5000);
 }
-
+//Start spawning obstacles, coins, hearts and enemies
+function startIntervals() {
+    obstacleInterval = setInterval(spawnObstacle, obstacleSpawnPeriod);
+    coinInterval = setInterval(spawnCoin, coinSpawnPeriod);
+    heartInterval = setInterval(spawnHeart, heartSpawnPeriod);
+    enemyInterval = setInterval(spawnEnemy, enemySpawnPeriod);
+}
 function startGame() {
     life = 3;
     controlCharacter();
-    //Spawn new obstacles, coins and hearts every 3 seconds
-    obstacleInterval = setInterval(spawnObstacle, 3000);
-    coinInterval = setInterval(spawnCoin, 3000);
-    heartInterval = setInterval(spawnHeart, 8000);
-    enemyInterval = setInterval(spawnEnemy, 5000);
-    //Stop the spawn when game over
+    startIntervals();
     if (gameOver) {
-        clearInterval(obstacleInterval);
-        clearInterval(coinInterval);
-        clearInterval(heartInterval);
-        clearInterval(enemyInterval);  
         return;
     }
-    }
+}
 
 function spawnCutEffect(direction) {
+    //Create cut effect div
     let cutEffect = document.createElement('div');
     cutEffect.classList.add('cut-effect');
     cutEffect.style.position = 'absolute';
@@ -227,84 +255,79 @@ function spawnCutEffect(direction) {
             cutEffect.style.top = cutEffect.offsetTop + 10 + 'px';
             cutEffect.style.backgroundImage = "url('image/cutD.png')";
         }
-        if (cutEffect.offsetLeft < offsetX || cutEffect.offsetLeft > offsetX + (width - 1)*charSize || cutEffect.offsetTop < offsetY || cutEffect.offsetTop > offsetY + (height - 1)*charSize) {
+        if (cutEffect.offsetLeft < offsetX || 
+            cutEffect.offsetLeft > offsetX + (width - 1)*charSize || 
+            cutEffect.offsetTop < offsetY || 
+            cutEffect.offsetTop > offsetY + (height - 1)*charSize) {
             cutEffect.remove();
             clearInterval(cutEffectInterval);
         }
     } , 15);
 
-
-
 }
-let standListener = null;
-let direction = 'right';
+
+
 function controlCharacter() {
-    //Use WASD to control the character
     let char = document.getElementById('character');
     if (movementListener) {
         document.removeEventListener('keydown', movementListener);
     }
-    //Only move on 2nd keydown, the first keydown is only to change the direction
+    //If the character current's direction is different from the new direction, then the first keypress is only to change the direction
     movementListener = function(e) {
-        if (e.keyCode === 87) {
-
-            //W
+        if (e.keyCode === 87) {   //W
             if (direction !== 'up') {
                 direction = 'up';
             }
-            else charY--;
-            // direction = 'up';
-            // charY--;
+            else {
+                charY--;
+            }
             if (charY < 0) {
                 charY = 0;
             }
             char.style.backgroundImage = "url('image/knight_up.gif')";
             char.style.backgroundPosition = 'top 50% center';
         }
-        else if (e.keyCode === 65) {
-            //A
+        else if (e.keyCode === 65) {    //A
             if (direction !== 'left') {
                 direction = 'left';
             }
-            else charX--;
-            // direction = 'left';
-            // charX--;
+            else {
+                charX--;
+            }
             if (charX < 0) {
                 charX = 0;
             }
             char.style.backgroundImage = "url('image/knight_left.gif')";
             char.style.backgroundPosition = 'top 50% left 20%';
         }
-        else if (e.keyCode === 83) {
-            //S
+        else if (e.keyCode === 83) {    //S
+
             if (direction !== 'down') {
                 direction = 'down';
             }
-            else charY++;
-            // direction = 'down';
-            // charY++;
+            else {
+                charY++;
+            }
             if (charY > height - 2) {
                 charY = height - 2;
             }
             char.style.backgroundImage = "url('image/knight_down.gif')";
             char.style.backgroundPosition = 'top 50% center';
         }
-        else if (e.keyCode === 68) {
-            //D
+        else if (e.keyCode === 68) {    //D
             if (direction !== 'right') {
                 direction = 'right';
             }
-            else charX++;
-            // direction = 'right';
-            // charX++;
+            else {
+                charX++;
+            }
             if (charX > width - 2) {
                 charX = width - 2;
             }
             char.style.backgroundImage = "url('image/knight_right.gif')";
             char.style.backgroundPosition = 'top 50% right 20%';
         }
-        //Press space to attack
-        else if (e.keyCode === 32) {
+        else if (e.keyCode === 32) {    //Space (attack)
             if (direction === 'up') {
                 char.style.backgroundImage = "url('image/knight_atk_top.gif')";
                 spawnCutEffect('up');
@@ -320,15 +343,13 @@ function controlCharacter() {
             else if (direction === 'right') {
                 char.style.backgroundImage = "url('image/knight_atk_right.gif')";
                 spawnCutEffect('right');
-            }
-            
+            } 
         }
         char.style.left = offsetX + (charX * charSize) + 'px';
         char.style.top = offsetY + (charY * charSize) + 'px';
     };
-
     document.addEventListener('keydown', movementListener);
-    //Add timeout to attack animation only stop after 0.5s when space is released
+    //Change character image back to moving pose after space key is released
     if (standListener) {
         document.removeEventListener('keyup', standListener);
     }
@@ -361,10 +382,8 @@ function controlCharacter() {
             }
         }
     };
-
     document.addEventListener('keyup', standListener);
-
-    }
+}
 
 function spawnCoin() {
     //Spawn a coin at random position 
@@ -383,11 +402,11 @@ function spawnCoin() {
     coin.style.backgroundSize = '25px 25px';
     coin.style.lineHeight = charSize + 'px';
     document.querySelector('.game-pattern').appendChild(coin);
-    //Make coin disappear after 8 seconds
+    //Make coin disappear after few seconds
     setTimeout(function () {
         document.querySelector('.game-pattern').removeChild(coin);
-    }, 8000);
-    }
+    }, coinDisappearPeriod);
+}
 
 function spawnHeart() {
     //Spawn a heart at random position 
@@ -406,11 +425,11 @@ function spawnHeart() {
     heart.style.backgroundRepeat = 'no-repeat';
     heart.style.lineHeight = charSize + 'px';
     document.querySelector('.game-pattern').appendChild(heart);
-    //Make heart disappear after 8 seconds
+    //Make heart disappear after few seconds
     setTimeout(function () {
         document.querySelector('.game-pattern').removeChild(heart);
-    }, 10000);
-    }
+    }, heartDisappearPeriod);
+}
 
 function spawnObstacle() {
     //Create obstacles based on score
@@ -432,7 +451,7 @@ function spawnObstacle() {
     else {
         numObstacle = 200;
     }
-    //Spawn obstacles
+    //Spawn caution sign at random position
     for (let i = 0; i < numObstacle; i++) {
         let obstacleX = Math.floor(Math.random() * (width - 1));
         let obstacleY = Math.floor(Math.random() * (height - 1));
@@ -451,13 +470,12 @@ function spawnObstacle() {
         obstacle.style.lineHeight = charSize + 'px';
         obstacle.style.zIndex = '4';
         document.querySelector('.game-pattern').appendChild(obstacle);
-
     }
     //Play caution sound
     let audio = new Audio('audio/caution.mp3');
     audio.volume = 0.2;
     audio.play();
-    //Make obstacles appear after 1 second
+    //Make obstacle appear
     setTimeout(function () {
         document.querySelectorAll('.obstacle').forEach(obstacle => {
             obstacle.style.backgroundImage = "url('image/spike.png')";
@@ -468,20 +486,19 @@ function spawnObstacle() {
             obstacle.style.zIndex = '2';    //Bring character to front
         });
         spikeAppeared = true;
-        updateScore();
-    }, 1000);
-
-    //Make spike disappear 
+    }, cautionPeriod);
+    //Make obstacle disappear after 0.5s
     setTimeout(function () {
         document.querySelectorAll('.obstacle').forEach(obstacle => {
             document.querySelector('.game-pattern').removeChild(obstacle);
         });
         spikeAppeared = false;
         lifeDropped = false;
-    }, 1500);
-    }
+    }, cautionPeriod + 500);
+}
 
 function spawnEnemy() {
+    //Spawn enemy at random position
     let enemyX = Math.floor(Math.random() * (width - 1));
     let enemyY = Math.floor(Math.random() * (height - 1));
     let enemy = document.createElement('div');
@@ -500,7 +517,9 @@ function spawnEnemy() {
     enemy.style.zIndex = '4';
     document.querySelector('.game-pattern').appendChild(enemy);
 }
-function updateEnemyAttack() {
+
+setInterval(enemyAttack, enemyAttackPeriod);
+function enemyAttack() {
     let enemies = document.querySelectorAll('.enemy');
     enemies.forEach((enemy) => {
         //4 fireballs fly in 4 directions from out of enemy
@@ -565,14 +584,10 @@ function updateEnemyAttack() {
         fireball_right.style.zIndex = '4';
         document.querySelector('.game-pattern').appendChild(fireball_right);
         //Fireballs move in 4 directions, 10 px every 25 ms
-        let fireball_top_x = parseInt(fireball_top.style.left);
         let fireball_top_y = parseInt(fireball_top.style.top);
-        let fireball_bottom_x = parseInt(fireball_bottom.style.left);
         let fireball_bottom_y = parseInt(fireball_bottom.style.top);
         let fireball_left_x = parseInt(fireball_left.style.left);
-        let fireball_left_y = parseInt(fireball_left.style.top);
         let fireball_right_x = parseInt(fireball_right.style.left);
-        let fireball_right_y = parseInt(fireball_right.style.top);
         let fireball_top_interval = setInterval(() => {
             fireball_top_y -= 5;
             fireball_top.style.top = fireball_top_y + 'px';
@@ -608,14 +623,10 @@ function updateEnemyAttack() {
             }
         }
         , 20);
-
-
-
     });
 }
-setInterval(updateEnemyAttack, 3000);
-function updateEnemy() {
-    //Check if the cut effect is on enemy
+setInterval(checkAttackHitEnemy, 10);
+function checkAttackHitEnemy() {
     let cut = document.querySelectorAll('.cut-effect');
     let enemies = document.querySelectorAll('.enemy');
     enemies.forEach((enemy) => {
@@ -647,10 +658,9 @@ function updateEnemy() {
                 }, 250);
             }
         });
-
     });
 }
-setInterval(updateEnemy, 1);
+
 let fireballHitPlayer = false;
 function reduceLife() {
     let char = document.getElementById('character');
@@ -672,45 +682,44 @@ function reduceLife() {
         }, 500);
     }
     if (life < 1) {
-            gameOver = true;
-            clearInterval(obstacleInterval);
-            clearInterval(coinInterval);
-            clearInterval(heartInterval);
-            clearInterval(enemyInterval);
-            alert('Game Over! Your score is ' + score);
-            document.querySelector('.game-pattern').innerHTML = 'GAME OVER';
-            document.querySelectorAll('.coin').forEach((coin) => {
-                coin.remove();
-            });
-            document.querySelectorAll('.heart').forEach((heart) => {
-                heart.remove();
-            });
-            document.querySelectorAll('.obstacle').forEach((obstacle) => {
-                obstacle.remove();
-            });
-            document.querySelectorAll('.enemy').forEach((enemy) => {
-                enemy.remove();
-            });
+        gameOver = true;
+        clearInterval(obstacleInterval);
+        clearInterval(coinInterval);
+        clearInterval(heartInterval);
+        clearInterval(enemyInterval);
+        alert('Game Over! Your score is ' + score);
+        document.querySelector('.game-pattern').innerHTML = 'GAME OVER';
+        document.querySelectorAll('.coin').forEach((coin) => {
+            coin.remove();
+        });
+        document.querySelectorAll('.heart').forEach((heart) => {
+            heart.remove();
+        });
+        document.querySelectorAll('.obstacle').forEach((obstacle) => {
+            obstacle.remove();
+        });
+        document.querySelectorAll('.enemy').forEach((enemy) => {
+            enemy.remove();
+        });
             
     }
 }
+setInterval(checkEnemyHitPlayer, 10);
 function checkEnemyHitPlayer() {
-    //Check if fireball_top, fireball_bottom, fireball_left, fireball_right hit player
-    let fireball_top = document.querySelectorAll('.fireball');
+    //Check if fireball hit player
+    let fireballs = document.querySelectorAll('.fireball');
     let char = document.getElementById('character');
-    fireball_top.forEach((fireball) => {
+    fireballs.forEach((fireball) => {
         if (fireball.style.left === char.style.left && fireball.style.top === char.style.top) {
             fireball.remove();
             reduceLife();
         }
     });
 }
-setInterval(checkEnemyHitPlayer, 1);
 
-function updateScore() {
-    // Check if character is on obstacle
+setInterval(checkObstacleHitPlayer, 10);
+function checkObstacleHitPlayer() {
     let char = document.getElementById('character');
-    
     let obstacles = document.querySelectorAll('.obstacle');
     obstacles.forEach((obstacle) => {
         if (!gameOver && spikeAppeared) {
@@ -719,10 +728,9 @@ function updateScore() {
             }
         }
     });
-
 }
-setInterval(updateScore, 1);
-setInterval(function updateCoin() {
+setInterval(checkPlayerGetCoin, 10);
+function checkPlayerGetCoin() {
     let coins = document.querySelectorAll('.coin');
     let char = document.getElementById('character');
     coins.forEach(coin => {
@@ -737,9 +745,9 @@ setInterval(function updateCoin() {
             }
         }
     });
-}, 1);
-
-setInterval(function updateHeart() {
+}
+setInterval(checkPlayerGetHeart, 10);
+function checkPlayerGetHeart() {
     let hearts = document.querySelectorAll('.heart');
     let char = document.getElementById('character');
     hearts.forEach(heart => {
@@ -747,7 +755,6 @@ setInterval(function updateHeart() {
             if (heart.style.left === char.style.left && heart.style.top === char.style.top) {
                 if (life < 3) {
                     life++;
-                    //Append heart to life bar
                     let element = document.createElement('div');
                     element.classList.add('life');
                     element.style.width = '30px';
@@ -761,7 +768,7 @@ setInterval(function updateHeart() {
             }
         }
     });
-}, 1);
+}
 
 function resetGame() {
     score = 0;
